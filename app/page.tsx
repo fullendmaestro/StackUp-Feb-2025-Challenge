@@ -1,13 +1,16 @@
 "use client";
 
-import { QuizLayout } from "@/components/quiz-layout";
 import { useState } from "react";
+import { Layout } from "@/components/layout";
+import { QuizGenerator } from "@/components/quiz-generator";
+import { QuizLayout } from "@/components/quiz-layout";
 
 interface QuizQuestion {
   question: string;
   options: string[];
   correctAnswer: string;
 }
+
 // Define math topics and their subtopics
 const mathTopics = [
   {
@@ -71,7 +74,7 @@ const mathTopics = [
   },
 ];
 
-export default function Home() {
+export default function QuizApp() {
   const [view, setView] = useState<"generate" | "quiz">("generate");
   const [selectedTopics, setSelectedTopics] = useState<
     { topic: string; subtopic: string | null }[]
@@ -117,46 +120,36 @@ export default function Home() {
   };
 
   const handleSubmit = (answer: string) => {
-    // Here you would typically handle the answer submission
     console.log(`Submitted answer: ${answer}`);
     if (currentQuestionIndex < questions.length - 1) {
       handleNext();
     }
   };
 
-  const groupedTopics = selectedTopics.reduce(
-    (acc, { topic, subtopic }) => {
-      if (!acc[topic]) {
-        acc[topic] = [];
-      }
-      if (subtopic) {
-        acc[topic].push(subtopic);
-      }
-      return acc;
-    },
-    {} as Record<string, string[]>,
-  );
-
-  const toggleTopic = (topic: string) => {
-    setOpenTopics((prev) =>
-      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic],
-    );
-  };
-  const [isTopicsOpen, setIsTopicsOpen] = useState(false);
-  const [openTopics, setOpenTopics] = useState<string[]>([]);
-
-  const currentQuestion = questions[currentQuestionIndex];
   return (
-    <div className="min-h-screen bg-[#E8F4FC]">
-      <QuizLayout
-        question={questions[currentQuestionIndex].question}
-        options={questions[currentQuestionIndex].options}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-        onSubmit={handleSubmit}
-        currentQuestionIndex={currentQuestionIndex}
-        totalQuestions={questions.length}
-      />
-    </div>
+    <Layout>
+      {view === "generate" ? (
+        <QuizGenerator
+          selectedTopics={selectedTopics}
+          setSelectedTopics={setSelectedTopics}
+          numQuestions={numQuestions}
+          setNumQuestions={setNumQuestions}
+          numChoices={numChoices}
+          setNumChoices={setNumChoices}
+          onGenerate={handleGenerate}
+          mathTopics={mathTopics}
+        />
+      ) : (
+        <QuizLayout
+          question={questions[currentQuestionIndex].question}
+          options={questions[currentQuestionIndex].options}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
+          onSubmit={handleSubmit}
+          currentQuestionIndex={currentQuestionIndex}
+          totalQuestions={questions.length}
+        />
+      )}
+    </Layout>
   );
 }
