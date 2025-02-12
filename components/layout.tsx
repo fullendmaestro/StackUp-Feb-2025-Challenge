@@ -1,7 +1,9 @@
+// components\layout.tsx
 "use client";
 
 import Image from "next/image";
 import { type ReactNode, useEffect, useRef } from "react";
+import { Header } from "./header";
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,6 +14,7 @@ export function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     if (audioRef.current) {
+      console.log(audioRef.current);
       audioRef.current.volume = 0.2; // Set volume to 20%
       audioRef.current
         .play()
@@ -21,6 +24,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="relative min-h-screen w-full bg-[#E8F4FC] overflow-hidden flex items-center justify-center">
+      <Header />
       <Image
         src="/quizy-background.svg"
         alt="Background"
