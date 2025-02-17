@@ -1,159 +1,330 @@
 "use client";
 
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
-
-interface QuizLayoutProps {
-  question: string;
-  options: string[];
-  onNext: () => void;
-  onPrevious: () => void;
-  onSubmit: (answer: string) => void;
-  currentQuestionIndex: number;
-  totalQuestions: number;
-  explanation: string;
-  loading: boolean;
-  showCorrectAnswer: boolean;
-  correctAnswer: number;
-  score: number | null;
-}
+import { Layout } from "@/components/layout";
+import Image from "next/image";
+import type { VisibilityType } from "./visibility-selector";
+import { ConfettiEffect } from "./confetti-effect";
+import { BetterLuckEffect } from "./better-luck-effect";
+import { Question, Quiz } from "@/lib/db/schema";
 
 export function QuizLayout({
-  question,
-  options,
-  onNext,
-  onPrevious,
-  onSubmit,
-  currentQuestionIndex,
-  totalQuestions,
-  explanation,
-  loading,
-  showCorrectAnswer,
-  correctAnswer,
-  score,
-}: QuizLayoutProps) {
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showExplanation, setShowExplanation] = useState(false);
+  quiz,
+  initialQuestions,
+  isReadonly,
+  selectedVisibilityType,
+}: {
+  quiz: Quiz;
+  initialQuestions: Question[];
+  isReadonly: boolean;
+  selectedVisibilityType: VisibilityType;
+}) {
+  console.log("quiz", quiz);
+  console.log("initialQuestions", initialQuestions);
+  // initialQuestions || [],
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [score, setScore] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([]);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showBetterLuck, setShowBetterLuck] = useState(false);
 
-  const handleSubmit = () => {
-    if (selectedAnswer) {
-      onSubmit(selectedAnswer);
-      setShowExplanation(true);
+  const isQuizCompleted = answeredQuestions.length === questions.length;
+
+  useEffect(() => {
+    if (isReadonly) {
+      setShowCorrectAnswer(true);
+      if (questions) {
+        setAnsweredQuestions(questions.map((_, index) => index));
+      }
+    }
+    console.log("questions", questions);
+  }, [isReadonly, questions]);
+
+  const sendAnswer = async () => {
+    if (isReadonly) return;
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quizId: quiz.id,
+          questionId: questions[currentQuestionIndex]?.id,
+          answer: selectedAnswer,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit answer");
+      }
+
+      setIsSubmitting(false);
+      return await response.json();
+    } catch (error) {
+      console.error("Error submitting answer:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const fetchQuestion = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quizId: quiz.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch question");
+      }
+
+      setIsLoading(false);
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching question:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAndSetQuestion = async () => {
+    const question = await fetchQuestion();
+    if (question) {
+      setQuestions((prev) => [...prev, question]);
+    }
+  };
+
+  useEffect(() => {
+    setQuestions(initialQuestions || []);
+
+    if (Number(quiz.numQuestions) > questions.length) {
+      fetchAndSetQuestion();
+    } else {
+      setShowCorrectAnswer(true);
+    }
+    setCurrentQuestionIndex(questions.length);
+  }, []);
+
+  const handleSubmit = async () => {
+    if (selectedAnswer === null || isReadonly) return;
+
+    setShowCorrectAnswer(true);
+    await sendAnswer();
+
+    const currentQuestion = questions[currentQuestionIndex];
+    const isCorrect =
+      currentQuestion &&
+      selectedAnswer === currentQuestion.content.correctAnswer;
+    setScore((prevScore) => prevScore + (isCorrect ? 1 : 0));
+
+    setAnsweredQuestions((prev) => [...prev, currentQuestionIndex]);
+
+    if (currentQuestionIndex === questions.length - 1) {
+      setShowResult(true);
+      if (score / questions.length > 0.5) {
+        setShowConfetti(true);
+      } else {
+        setShowBetterLuck(true);
+      }
+    } else {
+      setTimeout(() => {
+        setShowCorrectAnswer(false);
+        setSelectedAnswer(null);
+        setCurrentQuestionIndex((prev) => prev + 1);
+      }, 2000);
+    }
+
+    if (questions.length < Number(quiz.numQuestions)) {
+      await fetchAndSetQuestion();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0 && isQuizCompleted) {
+      setCurrentQuestionIndex((prev) => prev - 1);
+      setSelectedAnswer(null);
+      setShowCorrectAnswer(true);
     }
   };
 
   const handleNext = () => {
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    onNext();
+    if (currentQuestionIndex < questions.length - 1 && isQuizCompleted) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setSelectedAnswer(null);
+      setShowCorrectAnswer(true);
+    }
   };
 
-  return (
-    <div className="relative w-full max-w-4xl px-4">
-      {currentQuestionIndex > 0 && (
-        <button
-          onClick={onPrevious}
-          className="absolute left-4 top-1/2 -translate-y-1/2 transform"
-          aria-label="Previous question"
-        >
-          <Image
-            src="https://qgame3ccfcbtygae.public.blob.vercel-storage.com/quizy-previous-eT3zLo3euZVL292TUvvGRh3zejIvd5.svg"
-            alt="Previous"
-            width={48}
-            height={48}
-          />
-        </button>
-      )}
+  if (isLoading && questions.length === 0) {
+    return (
+      <Layout
+        quizId={quiz.id}
+        selectedVisibilityType={selectedVisibilityType}
+        isReadonly={isReadonly}
+      >
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#2E7D32]" />
+        </div>
+      </Layout>
+    );
+  }
 
-      {/* Question Card */}
-      <Card className="mx-auto w-full max-w-2xl bg-white/95 p-8 backdrop-blur">
-        <div className="space-y-8">
-          {loading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32]"></div>
+  return (
+    <Layout
+      quizId={quiz.id}
+      selectedVisibilityType={selectedVisibilityType}
+      isReadonly={isReadonly}
+    >
+      <div className="relative w-full max-w-4xl px-4">
+        {isQuizCompleted && currentQuestionIndex > 0 && (
+          <button
+            onClick={handlePrevious}
+            className="absolute left-4 top-1/2 -translate-y-1/2 transform"
+            aria-label="Previous question"
+          >
+            <Image
+              src="/quizy-previous.svg"
+              alt="Previous"
+              width={48}
+              height={48}
+            />
+          </button>
+        )}
+
+        <Card className="mx-auto w-full max-w-2xl bg-white/95 p-8 backdrop-blur max-h-[80vh] overflow-y-auto">
+          <div className="space-y-8">
+            <div className="mb-4 flex justify-between items-center">
+              <div className="text-sm text-gray-500">
+                Question {currentQuestionIndex + 1} of {questions.length}
+              </div>
+              <div className="text-sm text-gray-500">
+                Score: {score}/{questions.length}
+              </div>
             </div>
-          ) : (
-            <h2 className="text-center text-4xl font-bold text-[#2E7D32]">
-              {question}
-            </h2>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {options.map((option, index) => (
+            {isLoading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32]"></div>
+              </div>
+            ) : questions && questions[currentQuestionIndex] ? (
+              <>
+                <h2 className="text-center text-4xl font-bold text-[#2E7D32]">
+                  {questions[currentQuestionIndex].content.question}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {questions[currentQuestionIndex].content.options.map(
+                    (option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedAnswer(index)}
+                        disabled={showCorrectAnswer}
+                        className={`w-full flex items-center gap-4 p-4 rounded-full transition-colors ${
+                          selectedAnswer === index
+                            ? showCorrectAnswer
+                              ? index ===
+                                questions[currentQuestionIndex].content
+                                  .correctAnswer
+                                ? "bg-green-500 text-white"
+                                : "bg-red-500 text-white"
+                              : "bg-[#2E7D32] text-white"
+                            : showCorrectAnswer &&
+                                index ===
+                                  questions[currentQuestionIndex].content
+                                    .correctAnswer
+                              ? "bg-green-500 text-white"
+                              : "bg-[#E8F4FC] text-[#2E7D32] hover:bg-[#C8E6C9]"
+                        }`}
+                      >
+                        <span className="w-10 h-10 flex items-center justify-center rounded-full">
+                          {String.fromCharCode(65 + index)} .
+                        </span>
+                        <span className="text-xl">{option}</span>
+                      </button>
+                    ),
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-2xl font-bold text-[#2E7D32]">
+                No question available.
+              </div>
+            )}
+            <div className="flex justify-center">
               <button
-                key={index}
-                onClick={() => setSelectedAnswer(option)}
-                disabled={showCorrectAnswer}
-                className={`w-full flex items-center gap-4 p-4 rounded-full transition-colors ${
-                  selectedAnswer === option
-                    ? showCorrectAnswer
-                      ? index === correctAnswer
-                        ? "bg-green-500 text-white"
-                        : "bg-red-500 text-white"
-                      : "bg-[#2E7D32] text-white"
-                    : showCorrectAnswer && index === correctAnswer
-                      ? "bg-green-500 text-white"
-                      : "bg-[#E8F4FC] text-[#2E7D32] hover:bg-[#C8E6C9]"
+                onClick={handleSubmit}
+                disabled={
+                  selectedAnswer === null ||
+                  showCorrectAnswer ||
+                  isReadonly ||
+                  isSubmitting
+                }
+                className={`w-1/2 flex items-center justify-center gap-4 p-4 rounded-full transition-colors ${
+                  selectedAnswer !== null &&
+                  !showCorrectAnswer &&
+                  !isReadonly &&
+                  !isSubmitting
+                    ? "bg-[#2E7D32] text-white"
+                    : "bg-[#A5D6A7] hover:bg-[#81C784] text-black"
                 }`}
               >
-                <span className="w-10 h-10 flex items-center justify-center rounded-full">
-                  {String.fromCharCode(65 + index)} .
+                <span className="text-xl font-semibold text-[#E8F4FC]">
+                  Submit Answer{" "}
+                  {isSubmitting && (
+                    <span className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32]"></span>
+                  )}
                 </span>
-                <span className="text-xl">{option}</span>
               </button>
-            ))}
-          </div>
-          <div className="flex justify-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedAnswer || showCorrectAnswer}
-              className={`w-1/2 flex items-center justify-center gap-4 p-4 rounded-full transition-colors ${
-                selectedAnswer && !showCorrectAnswer
-                  ? "bg-[#2E7D32] text-white"
-                  : "bg-[#A5D6A7] hover:bg-[#81C784] text-[#E8F4FC]"
-              }`}
-            >
-              <span className="text-xl font-semibold">Submit Answer</span>
-            </button>
-          </div>
-          {(showExplanation || showCorrectAnswer) && (
-            <div className="mt-8 p-4 bg-[#E8F4FC] rounded-lg">
-              <h3 className="text-xl font-bold text-[#2E7D32] mb-2">
-                Explanation:
-              </h3>
-              <p>{explanation}</p>
             </div>
-          )}
-          {score !== null && (
-            <div className="mt-8 p-4 bg-[#E8F4FC] rounded-lg text-center">
-              <h3 className="text-2xl font-bold text-[#2E7D32] mb-2">
-                Final Score: {Math.round(score * 100)}%
-              </h3>
-              <p className="text-lg">
-                {score > 0.5
-                  ? "Congratulations!"
-                  : "Keep practicing, you'll improve!"}
-              </p>
-            </div>
-          )}
-        </div>
-      </Card>
+            {showCorrectAnswer &&
+              questions &&
+              questions[currentQuestionIndex] && (
+                <div className="mt-8 p-4 bg-[#E8F4FC] rounded-lg">
+                  <h3 className="text-xl font-bold text-[#2E7D32] mb-2">
+                    {selectedAnswer ===
+                    questions[currentQuestionIndex].content.correctAnswer
+                      ? "Correct!"
+                      : "Incorrect"}
+                  </h3>
+                  <p>{questions[currentQuestionIndex].content.explanation}</p>
+                </div>
+              )}
+            {showResult && (
+              <div className="mt-8 p-4 bg-[#E8F4FC] rounded-lg text-center">
+                <h3 className="text-2xl font-bold text-[#2E7D32] mb-2">
+                  Final Score: {Math.round((score / questions.length) * 100)}%
+                </h3>
+                <p className="text-lg">
+                  {score / questions.length > 0.5
+                    ? "Congratulations!"
+                    : "Keep practicing, you'll improve!"}
+                </p>
+              </div>
+            )}
+          </div>
+        </Card>
 
-      {/* Navigation - Next */}
-      {currentQuestionIndex < totalQuestions - 1 && (
-        <button
-          onClick={handleNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 transform"
-          aria-label="Next question"
-        >
-          <Image
-            src="https://qgame3ccfcbtygae.public.blob.vercel-storage.com/quizy-next-CcsT5w07qSoTeBziHrW8peSMV8OkxL.svg"
-            alt="Next"
-            width={48}
-            height={48}
-          />
-        </button>
-      )}
-    </div>
+        {isQuizCompleted && currentQuestionIndex < questions.length - 1 && (
+          <button
+            onClick={handleNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 transform"
+            aria-label="Next question"
+          >
+            <Image src="/quizy-next.svg" alt="Next" width={48} height={48} />
+          </button>
+        )}
+      </div>
+      <ConfettiEffect isActive={showConfetti} />
+      <BetterLuckEffect isActive={showBetterLuck} />
+    </Layout>
   );
 }

@@ -1,15 +1,23 @@
-// components\layout.tsx
 "use client";
 
 import Image from "next/image";
 import { type ReactNode, useEffect, useRef } from "react";
 import { Header } from "./header";
+import type { VisibilityType } from "./visibility-selector";
 
 interface LayoutProps {
   children: ReactNode;
+  quizId: string;
+  selectedVisibilityType: VisibilityType;
+  isReadonly: boolean;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({
+  children,
+  quizId,
+  selectedVisibilityType,
+  isReadonly,
+}: LayoutProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -24,7 +32,11 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="relative min-h-screen w-full bg-[#E8F4FC] overflow-hidden flex items-center justify-center">
-      <Header />
+      <Header
+        selectedVisibilityType={selectedVisibilityType}
+        quizId={quizId}
+        isReadonly={isReadonly}
+      />
       <Image
         src="/quizy-background.svg"
         alt="Background"

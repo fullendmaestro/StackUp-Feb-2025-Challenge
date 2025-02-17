@@ -2,20 +2,18 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useSelector } from "react-redux";
 
 const Confetti = dynamic(() => import("react-confetti"), {
   ssr: false,
 });
 
-interface ConfettiEffectProps {
-  isActive: boolean;
-}
-
-export function ConfettiEffect({ isActive }: ConfettiEffectProps) {
+export function ConfettiEffect({ isActive }: { isActive: boolean }) {
   const [windowDimension, setWindowDimension] = useState({
     width: 0,
     height: 0,
   });
+  const showConfetti = isActive;
 
   useEffect(() => {
     const updateDimension = () => {
@@ -33,7 +31,7 @@ export function ConfettiEffect({ isActive }: ConfettiEffectProps) {
     };
   }, []);
 
-  if (!isActive) return null;
+  if (!showConfetti) return null;
 
   return (
     <Confetti
