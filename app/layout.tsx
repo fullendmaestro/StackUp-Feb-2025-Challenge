@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Public_Sans } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/header";
+import type React from "react"; // Added import for React
 
 const publicSans = Public_Sans({ subsets: ["latin"] });
 
