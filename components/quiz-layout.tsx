@@ -212,102 +212,119 @@ export function QuizLayout({
                 Score: {score}/{questions.length}
               </div>
             </div>
-            {isLoading ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32]"></div>
-              </div>
-            ) : questions && questions[currentQuestionIndex] ? (
+            {!showResult && (
               <>
-                <h2 className="text-center text-4xl font-bold text-[#2E7D32]">
-                  {questions[currentQuestionIndex].content.question}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {questions[currentQuestionIndex].content.options.map(
-                    (option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedAnswer(index)}
-                        disabled={showCorrectAnswer}
-                        className={`w-full flex items-center gap-4 p-4 rounded-full transition-colors ${
-                          selectedAnswer === index
-                            ? showCorrectAnswer
-                              ? index ===
-                                questions[currentQuestionIndex].content
-                                  .correctAnswer
-                                ? "bg-green-500 text-white"
-                                : "bg-red-500 text-white"
-                              : "bg-[#2E7D32] text-white"
-                            : showCorrectAnswer &&
-                                index ===
-                                  questions[currentQuestionIndex].content
-                                    .correctAnswer
-                              ? "bg-green-500 text-white"
-                              : "bg-[#E8F4FC] text-[#2E7D32] hover:bg-[#C8E6C9]"
-                        }`}
-                      >
-                        <span className="w-10 h-10 flex items-center justify-center rounded-full">
-                          {String.fromCharCode(65 + index)} .
-                        </span>
-                        <span className="text-xl">{option}</span>
-                      </button>
-                    ),
-                  )}
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-40">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32]"></div>
+                  </div>
+                ) : questions && questions[currentQuestionIndex] ? (
+                  <>
+                    <h2 className="text-center text-4xl font-bold text-[#2E7D32]">
+                      {questions[currentQuestionIndex].content.question}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {questions[currentQuestionIndex].content.options.map(
+                        (option, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedAnswer(index)}
+                            disabled={showCorrectAnswer}
+                            className={`w-full flex items-center gap-4 p-4 rounded-full transition-colors ${
+                              selectedAnswer === index
+                                ? showCorrectAnswer
+                                  ? index ===
+                                    questions[currentQuestionIndex].content
+                                      .correctAnswer
+                                    ? "bg-green-500 text-white"
+                                    : "bg-red-500 text-white"
+                                  : "bg-[#2E7D32] text-white"
+                                : showCorrectAnswer &&
+                                    index ===
+                                      questions[currentQuestionIndex].content
+                                        .correctAnswer
+                                  ? "bg-green-500 text-white"
+                                  : "bg-[#E8F4FC] text-[#2E7D32] hover:bg-[#C8E6C9]"
+                            }`}
+                          >
+                            <span className="w-10 h-10 flex items-center justify-center rounded-full">
+                              {String.fromCharCode(65 + index)} .
+                            </span>
+                            <span className="text-xl">{option}</span>
+                          </button>
+                        ),
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center text-2xl font-bold text-[#2E7D32]">
+                    No question available.
+                  </div>
+                )}
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={
+                      selectedAnswer === null ||
+                      showCorrectAnswer ||
+                      isReadonly ||
+                      isSubmitting
+                    }
+                    className={`w-1/2 flex items-center justify-center gap-4 p-4 rounded-full transition-colors ${
+                      selectedAnswer !== null &&
+                      !showCorrectAnswer &&
+                      !isReadonly &&
+                      !isSubmitting
+                        ? "bg-[#2E7D32] text-white"
+                        : "bg-[#A5D6A7] hover:bg-[#81C784] text-black"
+                    }`}
+                  >
+                    <span className="text-xl font-semibold text-[#E8F4FC]">
+                      Submit Answer{" "}
+                      {isSubmitting && (
+                        <span className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32]"></span>
+                      )}
+                    </span>
+                  </button>
                 </div>
+                {showCorrectAnswer &&
+                  questions &&
+                  questions[currentQuestionIndex] && (
+                    <div className="mt-8 p-4 bg-[#E8F4FC] rounded-lg">
+                      <h3 className="text-xl font-bold text-[#2E7D32] mb-2">
+                        {selectedAnswer ===
+                        questions[currentQuestionIndex].content.correctAnswer
+                          ? "Correct!"
+                          : "Incorrect"}
+                      </h3>
+                      <p>
+                        {questions[currentQuestionIndex].content.explanation}
+                      </p>
+                    </div>
+                  )}
               </>
-            ) : (
-              <div className="text-center text-2xl font-bold text-[#2E7D32]">
-                No question available.
-              </div>
             )}
-            <div className="flex justify-center">
-              <button
-                onClick={handleSubmit}
-                disabled={
-                  selectedAnswer === null ||
-                  showCorrectAnswer ||
-                  isReadonly ||
-                  isSubmitting
-                }
-                className={`w-1/2 flex items-center justify-center gap-4 p-4 rounded-full transition-colors ${
-                  selectedAnswer !== null &&
-                  !showCorrectAnswer &&
-                  !isReadonly &&
-                  !isSubmitting
-                    ? "bg-[#2E7D32] text-white"
-                    : "bg-[#A5D6A7] hover:bg-[#81C784] text-black"
-                }`}
-              >
-                <span className="text-xl font-semibold text-[#E8F4FC]">
-                  Submit Answer{" "}
-                  {isSubmitting && (
-                    <span className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32]"></span>
-                  )}
-                </span>
-              </button>
-            </div>
-            {showCorrectAnswer &&
-              questions &&
-              questions[currentQuestionIndex] && (
-                <div className="mt-8 p-4 bg-[#E8F4FC] rounded-lg">
-                  <h3 className="text-xl font-bold text-[#2E7D32] mb-2">
-                    {selectedAnswer ===
-                    questions[currentQuestionIndex].content.correctAnswer
-                      ? "Correct!"
-                      : "Incorrect"}
-                  </h3>
-                  <p>{questions[currentQuestionIndex].content.explanation}</p>
-                </div>
-              )}
             {showResult && (
-              <div className="mt-8 p-4 bg-[#E8F4FC] rounded-lg text-center">
-                <h3 className="text-2xl font-bold text-[#2E7D32] mb-2">
+              <div className="mt-8 p-6 bg-[#E8F4FC] text-center shadow-lg rounded-xl">
+                <h3 className="text-3xl font-bold text-[#2E7D32] mb-4">
                   Final Score: {Math.round((score / questions.length) * 100)}%
                 </h3>
-                <p className="text-lg">
+                <p className="text-xl mb-4">
                   {score / questions.length > 0.5
-                    ? "Congratulations!"
-                    : "Keep practicing, you'll improve!"}
+                    ? "Congratulations! You did a great job!"
+                    : "Keep practicing, you'll improve with time!"}
                 </p>
+                <p className="text-lg mb-4">
+                  {score / questions.length > 0.5
+                    ? "You have a good understanding of the material."
+                    : "Don't worry, keep trying and you'll get better."}
+                </p>
+                <button
+                  onClick={() => setShowResult(false)}
+                  className="mt-4 px-6 py-3 bg-[#2E7D32] text-white rounded-full hover:bg-[#1B5E20] transition-colors text-lg font-semibold"
+                >
+                  Hide Result
+                </button>
               </div>
             )}
           </div>
