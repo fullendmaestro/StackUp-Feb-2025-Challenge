@@ -130,7 +130,7 @@ export function QuizLayout({
     setAnsweredQuestions((prev) => [...prev, currentQuestionIndex]);
     await sendAnswer();
 
-    if (currentQuestionIndex === questions.length - 1) {
+    if (currentQuestionIndex === Number(quiz.numQuestions) - 1) {
       setShowResult(true);
       if (score / questions.length > 0.5) {
         setShowConfetti(true);
