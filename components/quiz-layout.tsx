@@ -16,7 +16,7 @@ export function QuizLayout({
   selectedVisibilityType,
 }: {
   quiz: Quiz;
-  initialQuestions: Question[];
+  initialQuestions: any[];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
 }) {
