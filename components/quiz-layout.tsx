@@ -24,7 +24,7 @@ export function QuizLayout({
   console.log("initialQuestions", initialQuestions);
   // initialQuestions || [],
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -120,7 +120,6 @@ export function QuizLayout({
     if (selectedAnswer === null || isReadonly) return;
 
     setShowCorrectAnswer(true);
-    await sendAnswer();
 
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect =
@@ -129,6 +128,7 @@ export function QuizLayout({
     setScore((prevScore) => prevScore + (isCorrect ? 1 : 0));
 
     setAnsweredQuestions((prev) => [...prev, currentQuestionIndex]);
+    await sendAnswer();
 
     if (currentQuestionIndex === questions.length - 1) {
       setShowResult(true);

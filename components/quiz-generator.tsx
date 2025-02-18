@@ -35,6 +35,40 @@ const mathTopics = [
       { label: "Inequalities", value: "inequalities" },
     ],
   },
+  {
+    label: "Geometry",
+    value: "geometry",
+    children: [
+      { label: "Angles", value: "angles" },
+      { label: "Triangles", value: "triangles" },
+      { label: "Circles", value: "circles" },
+      { label: "Area and Perimeter", value: "area-perimeter" },
+      { label: "Volume and Surface Area", value: "volume-surface-area" },
+    ],
+  },
+  {
+    label: "Trigonometry",
+    value: "trigonometry",
+    children: [
+      {
+        label: "Right Triangle Trigonometry",
+        value: "right-triangle-trigonometry",
+      },
+      { label: "Sine and Cosine Rules", value: "sine-cosine-rules" },
+      { label: "Trigonometric Functions", value: "trigonometric-functions" },
+      { label: "Trigonometric Identities", value: "trigonometric-identities" },
+    ],
+  },
+  {
+    label: "Statistics",
+    value: "statistics",
+    children: [
+      { label: "Mean, Median, Mode", value: "mean-median-mode" },
+      { label: "Data Distribution", value: "data-distribution" },
+      { label: "Probability", value: "probability" },
+      { label: "Standard Deviation", value: "standard-deviation" },
+    ],
+  },
 ];
 
 export function QuizGenerator({
@@ -86,9 +120,13 @@ export function QuizGenerator({
   };
 
   return (
-    <Layout quizId={id} selectedVisibilityType={selectedVisibilityType}>
+    <Layout
+      quizId={id}
+      selectedVisibilityType={selectedVisibilityType}
+      isReadonly={true}
+    >
       <div className="mx-auto max-w-2xl p-6 space-y-8">
-        <Card className="p-6 bg-white/95 backdrop-blur">
+        <Card className="p-6 bg-white/95 backdrop-blur rounded-lg">
           <CardContent className="space-y-8">
             <h1 className="text-2xl font-semibold text-[#2E7D32]">
               Generate a math quiz by selecting topics and specifying the number
@@ -104,6 +142,7 @@ export function QuizGenerator({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter quiz title"
+                  className="rounded-xl"
                 />
               </div>
 
@@ -116,6 +155,7 @@ export function QuizGenerator({
                   selected={selectedTopics}
                   onChange={setSelectedTopics}
                   placeholder="Select topics and subtopics"
+                  className="rounded-xl px-5"
                 />
               </div>
 
@@ -130,9 +170,9 @@ export function QuizGenerator({
                     max={20}
                     min={1}
                     step={1}
-                    className="flex-1"
+                    className="flex-1 rounded-xl"
                   />
-                  <div className="w-12 h-12 border rounded-lg flex items-center justify-center bg-white">
+                  <div className="w-12 h-12 border rounded-xl flex items-center justify-center bg-white">
                     {numQuestions}
                   </div>
                 </div>
