@@ -1,9 +1,10 @@
 "use client";
 
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Menu,
   Music,
@@ -33,14 +34,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { VisibilitySelector, VisibilityType } from "./visibility-selector";
 
-const quizzes = [
-  { id: 1, name: "Basic Arithmetic" },
-  { id: 2, name: "Algebra Fundamentals" },
-  { id: 3, name: "Geometry Basics" },
-  { id: 4, name: "Trigonometry 101" },
-  { id: 5, name: "Statistics Intro" },
-];
-
 export function Header({
   selectedVisibilityType,
   quizId,
@@ -53,25 +46,40 @@ export function Header({
   const router = useRouter();
   const pathname = usePathname();
   const [isMusicOn, setIsMusicOn] = useState(true);
+  const [quizzes, setQuizzes] = useState<Array<{ id: string; name: string }>>(
+    [],
+  );
 
   const toggleMusic = () => {
     setIsMusicOn(!isMusicOn);
     // TODO: Implement actual music toggling logic
   };
 
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const response = await fetch("/api/history");
+        const data = await response.json();
+        const mappedQuizzes = data.map((quiz: any) => ({
+          id: quiz.id,
+          name: quiz.title,
+        }));
+        setQuizzes(mappedQuizzes);
+      } catch (error) {
+        console.error("Error fetching quizzes:", error);
+      }
+    };
+
+    fetchQuizzes();
+  }, []);
+
   return (
     <header className="top-0 z-50 w-full absolute border-b bg-[#E8F4FC]/95 backdrop-blur supports-[backdrop-filter]:bg-[#E8F4FC]/60">
-      <div className="container flex h-16 items-center justify-between mx-8">
-        <Link href="/" className="flex items-center space-x-2">
-          <Image src="/QUIZY-logo.svg" alt="logo" width={100} height={60} />
-          <VisibilitySelector
-            quizId={quizId}
-            selectedVisibilityType={selectedVisibilityType}
-            className="order-1 md:order-3 bg-[#E8F4FC]"
-          />
+      <div className="container flex h-16 items-center justify-between mx-auto max-w-4xl px-4">
+        <div className="flex items-center space-x-4 order-1 md:order-3">
           <Button
             variant="outline"
-            className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0 bg-[#E8F4FC] rounded-xl"
+            className="md:px-2 px-2 md:h-fit bg-[#E8F4FC] rounded-xl"
             onClick={() => {
               router.push("/");
               router.refresh();
@@ -80,7 +88,12 @@ export function Header({
             <PlusIcon />
             <span className="md:sr-only">New Chat</span>
           </Button>
-        </Link>
+          <VisibilitySelector
+            quizId={quizId}
+            selectedVisibilityType={selectedVisibilityType}
+            className="bg-[#E8F4FC]"
+          />
+        </div>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -187,9 +200,21 @@ export function Header({
                         {isMusicOn ? "Turn Off Music" : "Turn On Music"}
                       </span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <button
+                        type="button"
+                        className="w-full cursor-pointer"
+                        onClick={() => {
+                          signOut({
+                            redirectTo: "/",
+                          });
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </button>
+                      {/* <span>Log out</span> */}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
