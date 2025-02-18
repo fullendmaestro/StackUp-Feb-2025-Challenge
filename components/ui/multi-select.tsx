@@ -3,6 +3,7 @@
 import * as React from "react";
 import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/utils/cn";
 
 type Option = {
   label: string;
@@ -20,6 +21,7 @@ type MultiSelectProps = {
   selected: SelectedOption[];
   onChange: (selected: SelectedOption[]) => void;
   placeholder?: string;
+  className?: string;
 };
 
 export function MultiSelect({
@@ -27,6 +29,7 @@ export function MultiSelect({
   selected,
   onChange,
   placeholder,
+  className,
 }: MultiSelectProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
@@ -106,14 +109,17 @@ export function MultiSelect({
   return (
     <div className="relative" ref={ref}>
       <div
-        className="flex flex-wrap gap-2 min-h-[38px] items-center border border-input rounded-md p-1 cursor-text"
+        className={cn(
+          "flex flex-wrap gap-2 min-h-[38px] items-center border border-input rounded-md p-1 cursor-text",
+          className,
+        )}
         onClick={() => setIsOpen(true)}
       >
         {selected.map(({ topic, subtopic }) => (
           <Badge
             key={`${topic}-${subtopic}`}
             variant="secondary"
-            className="mr-1"
+            className="mr-1 rounded-xl"
           >
             {topic} {subtopic ? `> ${subtopic}` : "> All"}
             <button
@@ -137,18 +143,18 @@ export function MultiSelect({
         />
       </div>
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 shadow-lg max-h-60 overflow-auto rounded-xl">
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => (
               <div key={option.value}>
                 <div
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-100 flex items-center justify-between ${
+                  className={`px-3 py-2 cursor-pointer hover:bg-[#E8F4FC] flex items-center justify-between rounded-xl ${
                     isTopicSelected(option.label) &&
                     !selected.some(
                       (item) =>
                         item.topic === option.label && item.subtopic !== null,
                     )
-                      ? "bg-purple-100"
+                      ? "bg-[#C8E6C9]"
                       : ""
                   }`}
                   onClick={() => {
@@ -169,9 +175,9 @@ export function MultiSelect({
                     {option.children.map((child) => (
                       <div
                         key={child.value}
-                        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                        className={`px-3 py-2 cursor-pointer hover:bg-[#E8F4FC] rounded-xl ${
                           isSubtopicSelected(option.label, child.label)
-                            ? "bg-purple-100"
+                            ? "bg-[#C8E6C9]"
                             : ""
                         }`}
                         onClick={() => toggleOption(option.label, child.label)}
