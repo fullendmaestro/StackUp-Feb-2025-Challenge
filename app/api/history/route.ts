@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { getQuizzesByUserId } from "@/lib/db/queries";
 
@@ -10,5 +11,5 @@ export async function GET() {
 
   // biome-ignore lint: Forbidden non-null assertion.
   const quizzes = await getQuizzesByUserId(session.user.id!);
-  return Response.json(quizzes);
+  return NextResponse.json(quizzes);
 }
