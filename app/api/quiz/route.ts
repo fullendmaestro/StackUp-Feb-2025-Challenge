@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { saveQuiz, getQuizzesByUserId } from "@/lib/db/queries";
 import { auth } from "@/app/(auth)/auth";
+import { generateUUID } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
     const { id, title, topics, numQuestions, visibility } = await req.json();
     // Store quiz in database
     const newQuiz = await saveQuiz({
-      id,
+      id: generateUUID(),
       title,
       topics,
       numQuestions,

@@ -28,7 +28,11 @@ export async function POST(req: NextRequest) {
     }
 
     const question = await generateQuestion(quizId);
-    const savedQuestion = await saveQuestion({ id, quizId, content: question });
+    const savedQuestion = await saveQuestion({
+      id: generateUUID(),
+      quizId,
+      content: question,
+    });
     console.log("savedQuestion", savedQuestion);
     return NextResponse.json(savedQuestion, { status: 200 });
   } catch (error) {
