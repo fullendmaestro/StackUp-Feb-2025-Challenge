@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,9 +11,15 @@ import {
 import { cn } from "@/lib/utils";
 
 import { Check, ChevronDownIcon, GlobeIcon, LockIcon } from "lucide-react";
-import { useQuizVisibility } from "@/hooks/use-quiz-visibility";
 
 export type VisibilityType = "private" | "public";
+
+export type Visibility = {
+  id: VisibilityType;
+  label: string;
+  description: string;
+  icon: ReactNode;
+};
 
 const visibilities: Array<{
   id: VisibilityType;
@@ -38,22 +44,56 @@ const visibilities: Array<{
 export function VisibilitySelector({
   quizId,
   className,
-  selectedVisibilityType,
+  initialVisibilityId,
+  isReadonly,
 }: {
   quizId: string;
-  selectedVisibilityType: VisibilityType;
+  initialVisibilityId: VisibilityType;
+  isReadonly: boolean;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
+  const [visibility, setVisibility] = useState<Visibility>();
 
-  const { visibilityType, setVisibilityType } = useQuizVisibility({
-    quizId,
-    initialVisibility: selectedVisibilityType,
-  });
+  const updateVisibility = async (newVisibility: Visibility) => {
+    try {
+      const response = await fetch("/api/quiz", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "visibility",
+          quizId,
+          visibility: newVisibility.id,
+        }),
+      });
 
-  const selectedVisibility = useMemo(
-    () => visibilities.find((visibility) => visibility.id === visibilityType),
-    [visibilityType],
-  );
+      if (!response.ok) {
+        throw new Error("Failed to update visibility");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating visibility:", error);
+    }
+  };
+
+  useEffect(() => {
+    const initialVisibility = visibilities.find(
+      (visibility) => visibility.id === initialVisibilityId,
+    );
+    setVisibility(initialVisibility);
+  }, [initialVisibilityId]);
+
+  if (isReadonly) {
+    return (
+      <Button
+        variant="outline"
+        className="md:flex md:px-2 md:h-[34px] bg-[#E8F4FC] rounded-xl"
+      >
+        {visibility?.icon}
+        {visibility?.label}
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -65,8 +105,8 @@ export function VisibilitySelector({
         )}
       >
         <Button variant="outline" className="md:flex md:px-2 md:h-[34px]">
-          {selectedVisibility?.icon}
-          {selectedVisibility?.label}
+          {visibility?.icon}
+          {visibility?.label}
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
@@ -75,21 +115,22 @@ export function VisibilitySelector({
         align="start"
         className="min-w-[300px] bg-[#E8F4FC] rounded-xl"
       >
-        {visibilities.map((visibility) => (
+        {visibilities.map((hvisibility) => (
           <DropdownMenuItem
-            key={visibility.id}
-            onSelect={() => {
-              setVisibilityType(visibility.id);
+            key={hvisibility.id}
+            onSelect={async () => {
+              setVisibility(hvisibility);
               setOpen(false);
+              await updateVisibility(hvisibility);
             }}
             className="gap-4 group/item flex flex-row justify-between items-center"
-            data-active={visibility.id === visibilityType}
+            data-active={hvisibility.id === visibility?.id}
           >
             <div className="flex flex-col gap-1 items-start">
-              {visibility.label}
-              {visibility.description && (
+              {hvisibility.label}
+              {hvisibility.description && (
                 <div className="text-xs text-muted-foreground">
-                  {visibility.description}
+                  {hvisibility.description}
                 </div>
               )}
             </div>

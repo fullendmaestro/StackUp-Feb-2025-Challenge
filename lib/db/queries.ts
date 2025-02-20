@@ -145,6 +145,17 @@ export async function updateAnswer({
 }
 
 // Delete
+export async function deleteQuizById({ id }: { id: string }) {
+  try {
+    await db.delete(question).where(eq(question.quizId, id));
+
+    return await db.delete(quiz).where(eq(quiz.id, id));
+  } catch (error) {
+    console.error("Failed to delete chat by id from database");
+    throw error;
+  }
+}
+
 export async function deleteQuiz(id: string) {
   await db.delete(quiz).where(eq(quiz.id, id));
 }
