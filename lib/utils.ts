@@ -24,3 +24,11 @@ export function calculateScore(questions: Question[]): any {
 
   return score;
 }
+
+export function getRandomOption(): number {
+  return Math.floor(Math.random() * 4);
+}
+
+export function getRandomTopic(lenght: number): number {
+  return Math.floor(Math.random() * (lenght + 1));
+}
