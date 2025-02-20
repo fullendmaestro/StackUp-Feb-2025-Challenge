@@ -180,6 +180,7 @@ export function QuizLayout({
         isReadonly={isReadonly}
         selectedVisibilityType={selectedVisibilityType}
         score={score}
+        user={user}
       />
     );
   }

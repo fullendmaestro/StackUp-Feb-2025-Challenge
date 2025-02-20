@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "next-auth";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/components/layout";
@@ -14,12 +15,14 @@ export function QuizPreviewLayout({
   isReadonly,
   selectedVisibilityType,
   score,
+  user,
 }: {
   quiz: Quiz;
   questions: Question[];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
   score: number;
+  user: User | undefined;
 }) {
   console.log("preview questions", questions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -37,6 +40,7 @@ export function QuizPreviewLayout({
       quizId={quiz.id}
       selectedVisibilityType={selectedVisibilityType}
       isReadonly={isReadonly}
+      user={undefined}
     >
       <div className="relative w-full max-w-4xl px-4">
         {currentQuestionIndex > 0 && (
