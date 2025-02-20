@@ -15,37 +15,37 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#2E7D32", // Green color used in the application
+          foreground: "#FFFFFF", // White foreground for primary
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#E8F4FC", // Light blue background color used in the application
+          foreground: "#2E7D32", // Green foreground for secondary
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "#D32F2F", // Red color for destructive actions
+          foreground: "#FFFFFF", // White foreground for destructive
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#A5D6A7", // Light green color for muted elements
+          foreground: "#2E7D32", // Green foreground for muted
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#81C784", // Accent color used in the application
+          foreground: "#2E7D32", // Green foreground for accent
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#E8F4FC", // Light blue background for popovers
+          foreground: "#2E7D32", // Green foreground for popovers
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "#FFFFFF", // White background for cards
+          foreground: "#2E7D32", // Green foreground for cards
         },
       },
       borderRadius: {
-        lg: "`var(--radius)`",
-        md: "`calc(var(--radius) - 2px)`",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       backgroundImage: {
