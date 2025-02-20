@@ -1,7 +1,8 @@
 "use client";
 
+import type { User } from "next-auth";
 import Image from "next/image";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Header } from "./header";
 import type { VisibilityType } from "./visibility-selector";
 
@@ -10,6 +11,7 @@ interface LayoutProps {
   quizId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  user: User | undefined;
 }
 
 export function Layout({
@@ -17,18 +19,36 @@ export function Layout({
   quizId,
   selectedVisibilityType,
   isReadonly,
+  user,
 }: LayoutProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [isMusicOn, setIsMusicOn] = useState(true);
+
+  const handleToggleMusic = () => {
+    setIsMusicOn((prev) => !prev);
+    if (audioRef.current) {
+      if (isMusicOn) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current
+          .play()
+          .catch((error) => console.log("Audio playback failed:", error));
+      }
+    }
+  };
 
   useEffect(() => {
     if (audioRef.current) {
-      console.log(audioRef.current);
       audioRef.current.volume = 0.2; // Set volume to 20%
-      audioRef.current
-        .play()
-        .catch((error) => console.log("Audio playback failed:", error));
+      if (isMusicOn) {
+        audioRef.current
+          .play()
+          .catch((error) => console.log("Audio playback failed:", error));
+      } else {
+        audioRef.current.pause();
+      }
     }
-  }, []);
+  }, [isMusicOn]);
 
   return (
     <div className="relative min-h-screen w-full bg-[#E8F4FC] overflow-hidden flex items-center justify-center">
@@ -36,6 +56,9 @@ export function Layout({
         selectedVisibilityType={selectedVisibilityType}
         quizId={quizId}
         isReadonly={isReadonly}
+        user={user}
+        isMusicOn={isMusicOn}
+        onToggleMusic={handleToggleMusic}
       />
       <Image
         src="/quizy-background.svg"

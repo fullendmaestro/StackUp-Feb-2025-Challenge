@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "next-auth";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -75,10 +76,12 @@ export function QuizGenerator({
   id,
   selectedVisibilityType,
   isReadonly,
+  user,
 }: {
   id: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  user: User | undefined;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -99,7 +102,7 @@ export function QuizGenerator({
         body: JSON.stringify({
           id,
           title,
-          topics: selectedTopics.map((t) => t.subtopic || t.topic),
+          topics: JSON.stringify(selectedTopics),
           numQuestions,
           visibility: "private",
         }),
@@ -124,6 +127,7 @@ export function QuizGenerator({
       quizId={id}
       selectedVisibilityType={selectedVisibilityType}
       isReadonly={true}
+      user={user}
     >
       <div className="mx-auto max-w-2xl p-6 space-y-8">
         <Card className="p-6 bg-white/95 backdrop-blur rounded-lg">

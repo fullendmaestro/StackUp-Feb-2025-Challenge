@@ -1,21 +1,15 @@
-"use client";
-
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
+import type { User } from "next-auth";
 import { useState, useEffect } from "react";
 import {
   Menu,
   Music,
   LogOut,
-  User,
+  User as UserIcon,
   PlusIcon,
   MoreHorizontalIcon,
-  ShareIcon,
-  LockIcon,
-  Check,
-  GlobeIcon,
   TrashIcon,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -27,9 +21,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { VisibilitySelector, VisibilityType } from "./visibility-selector";
@@ -38,21 +29,43 @@ export function Header({
   selectedVisibilityType,
   quizId,
   isReadonly,
+  user,
+  isMusicOn,
+  onToggleMusic,
 }: {
   selectedVisibilityType: VisibilityType;
   quizId: string;
   isReadonly: boolean;
+  user: User | undefined;
+  isMusicOn: boolean;
+  onToggleMusic: () => void;
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isMusicOn, setIsMusicOn] = useState(true);
   const [quizzes, setQuizzes] = useState<Array<{ id: string; name: string }>>(
     [],
   );
 
   const toggleMusic = () => {
-    setIsMusicOn(!isMusicOn);
-    // TODO: Implement actual music toggling logic
+    onToggleMusic();
+  };
+
+  const deleteQuiz = async (quizId: string) => {
+    try {
+      const response = await fetch(`/api/quiz?id=${quizId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete quiz");
+      }
+
+      setQuizzes((prevQuizzes) =>
+        prevQuizzes.filter((quiz) => quiz.id !== quizId),
+      );
+    } catch (error) {
+      console.error("Error deleting quiz:", error);
+    }
   };
 
   useEffect(() => {
@@ -90,7 +103,8 @@ export function Header({
           </Button>
           <VisibilitySelector
             quizId={quizId}
-            selectedVisibilityType={selectedVisibilityType}
+            initialVisibilityId={selectedVisibilityType}
+            isReadonly={isReadonly}
             className="bg-[#E8F4FC]"
           />
         </div>
@@ -102,11 +116,11 @@ export function Header({
           </SheetTrigger>
           <SheetContent className="rounded-xl bg-[#E8F4FC]">
             <div className="flex flex-col h-full">
-              <div className="flex-grow">
-                <h2 className="text-lg font-semibold mb-4">
+              <div className="flex-grow flex flex-col">
+                <h2 className="text-lg font-semibold mb-4 h-8">
                   Available Quizzes
                 </h2>
-                <ul className="space-y-2">
+                <ul className="space-y-2 flex-grow overflow-y-auto h-1">
                   {quizzes.map((quiz) => (
                     <li key={quiz.id} className="flex justify-between">
                       <Link
@@ -117,7 +131,7 @@ export function Header({
                       </Link>
                       <DropdownMenu modal={true}>
                         <DropdownMenuTrigger asChild>
-                          <MoreHorizontalIcon />
+                          <MoreHorizontalIcon className="h-4 w-4" />
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent
@@ -125,53 +139,11 @@ export function Header({
                           align="end"
                           className="rounded-xl bg-[#E8F4FC]"
                         >
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="cursor-pointer">
-                              <ShareIcon />
-                              <span>Share</span>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                              <DropdownMenuSubContent className="rounded-xl bg-[#E8F4FC]">
-                                <DropdownMenuItem
-                                  className="cursor-pointer flex-row justify-between"
-                                  onClick={() => {
-                                    // setVisibilityType("private");
-                                  }}
-                                >
-                                  <div className="flex flex-row gap-2 items-center">
-                                    <LockIcon size={12} />
-                                    <span>Private</span>
-                                  </div>
-                                  {selectedVisibilityType === "private" ? (
-                                    <Check />
-                                  ) : null}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="cursor-pointer flex-row justify-between"
-                                  onClick={() => {
-                                    // setVisibilityType("public");
-                                  }}
-                                >
-                                  <div className="flex flex-row gap-2 items-center">
-                                    <GlobeIcon />
-                                    <span>Public</span>
-                                  </div>
-                                  {selectedVisibilityType === "public" ? (
-                                    <Check />
-                                  ) : null}
-                                </DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                          </DropdownMenuSub>
-
                           <DropdownMenuItem
                             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
-                            onSelect={
-                              () => 3
-                              // onDelete(chat.id)
-                            }
+                            onSelect={() => deleteQuiz(quiz.id)}
                           >
-                            <TrashIcon />
+                            <TrashIcon className="h-4" />
                             <span>Delete</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -179,45 +151,45 @@ export function Header({
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="mt-auto">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>John Doe</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="bg-[#E8F4FC] rounded-xl"
-                  >
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={toggleMusic}>
-                      <Music className="mr-2 h-4 w-4" />
-                      <span>
-                        {isMusicOn ? "Turn Off Music" : "Turn On Music"}
-                      </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <button
-                        type="button"
-                        className="w-full cursor-pointer"
-                        onClick={() => {
-                          signOut({
-                            redirectTo: "/",
-                          });
-                        }}
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign out
-                      </button>
-                      {/* <span>Log out</span> */}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="h-8">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        <span className="truncate">{user?.email}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="bg-[#E8F4FC] rounded-xl"
+                    >
+                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={toggleMusic}>
+                        <Music className="mr-2 h-4 w-4" />
+                        <span>
+                          {isMusicOn ? "Turn Off Music" : "Turn On Music"}
+                        </span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <button
+                          type="button"
+                          className="w-full cursor-pointer"
+                          onClick={() => {
+                            signOut({
+                              redirectTo: "/",
+                            });
+                          }}
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Sign out
+                        </button>
+                        {/* <span>Log out</span> */}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             </div>
           </SheetContent>

@@ -35,6 +35,7 @@ export default async function QuizPage(props: {
       initialQuestions={questions}
       isReadonly={!isQuizCreator}
       selectedVisibilityType={quiz.visibility}
+      user={session?.user}
     />
   );
 }

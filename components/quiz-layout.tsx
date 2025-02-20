@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "next-auth";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/components/layout";
@@ -15,11 +16,13 @@ export function QuizLayout({
   initialQuestions,
   isReadonly,
   selectedVisibilityType,
+  user,
 }: {
   quiz: Quiz;
   initialQuestions: any[];
   isReadonly: boolean;
   selectedVisibilityType: VisibilityType;
+  user: User | undefined;
 }) {
   console.log("quiz", quiz);
   console.log("initialQuestions", initialQuestions);
@@ -32,19 +35,13 @@ export function QuizLayout({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [score, setScore] = useState(0);
-  const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showBetterLuck, setShowBetterLuck] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  const isQuizCompleted = answeredQuestions.length === questions.length;
-
   useEffect(() => {
     if (isReadonly) {
       setShowCorrectAnswer(true);
-      if (questions) {
-        setAnsweredQuestions(questions.map((_, index) => index));
-      }
     }
     console.log("questions", questions);
   }, [isReadonly, questions]);
@@ -129,8 +126,16 @@ export function QuizLayout({
       selectedAnswer === currentQuestion.content.correctAnswer;
     setScore((prevScore) => prevScore + (isCorrect ? 1 : 0));
 
-    setAnsweredQuestions((prev) => [...prev, currentQuestionIndex]);
     await sendAnswer();
+
+    const updatedQuestion = await sendAnswer();
+    if (updatedQuestion) {
+      setQuestions((prevQuestions) =>
+        prevQuestions.map((q, index) =>
+          index === currentQuestionIndex ? updatedQuestion : q,
+        ),
+      );
+    }
 
     if (currentQuestionIndex === Number(quiz.numQuestions) - 1) {
       setShowResult(true);
@@ -152,28 +157,13 @@ export function QuizLayout({
     }
   };
 
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0 && isQuizCompleted) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-      setSelectedAnswer(null);
-      setShowCorrectAnswer(true);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1 && isQuizCompleted) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setSelectedAnswer(null);
-      setShowCorrectAnswer(true);
-    }
-  };
-
   if (isLoading && questions.length === 0) {
     return (
       <Layout
         quizId={quiz.id}
         selectedVisibilityType={selectedVisibilityType}
         isReadonly={isReadonly}
+        user={user}
       >
         <div className="flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#2E7D32]" />
@@ -199,28 +189,14 @@ export function QuizLayout({
       quizId={quiz.id}
       selectedVisibilityType={selectedVisibilityType}
       isReadonly={isReadonly}
+      user={user}
     >
       <div className="relative w-full max-w-4xl px-4">
-        {isQuizCompleted && currentQuestionIndex > 0 && (
-          <button
-            onClick={handlePrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 transform"
-            aria-label="Previous question"
-          >
-            <Image
-              src="/quizy-previous.svg"
-              alt="Previous"
-              width={48}
-              height={48}
-            />
-          </button>
-        )}
-
         <Card className="mx-auto w-full max-w-2xl bg-white/95 p-8 backdrop-blur max-h-[80vh] overflow-y-auto">
           <div className="space-y-8">
             <div className="mb-4 flex justify-between items-center">
               <div className="text-sm text-gray-500">
-                Question {currentQuestionIndex + 1} of {questions.length}
+                Question {currentQuestionIndex + 1} of {quiz.numQuestions}
               </div>
               <div className="text-sm text-gray-500">
                 Score: {score}/{questions.length}
@@ -346,16 +322,6 @@ export function QuizLayout({
             )}
           </div>
         </Card>
-
-        {isQuizCompleted && currentQuestionIndex < questions.length - 1 && (
-          <button
-            onClick={handleNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 transform"
-            aria-label="Next question"
-          >
-            <Image src="/quizy-next.svg" alt="Next" width={48} height={48} />
-          </button>
-        )}
       </div>
       <ConfettiEffect isActive={showConfetti} />
       <BetterLuckEffect isActive={showBetterLuck} />
