@@ -8,6 +8,7 @@ import type { VisibilityType } from "./visibility-selector";
 import { ConfettiEffect } from "./confetti-effect";
 import { BetterLuckEffect } from "./better-luck-effect";
 import { Question, Quiz } from "@/lib/db/schema";
+import { QuizPreviewLayout } from "./quiz-preview-layout";
 
 export function QuizLayout({
   quiz,
@@ -34,6 +35,7 @@ export function QuizLayout({
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showBetterLuck, setShowBetterLuck] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const isQuizCompleted = answeredQuestions.length === questions.length;
 
@@ -108,10 +110,10 @@ export function QuizLayout({
   useEffect(() => {
     setQuestions(initialQuestions || []);
 
-    if (Number(quiz.numQuestions) > questions.length) {
+    if (Number(quiz.numQuestions) > initialQuestions.length) {
       fetchAndSetQuestion();
     } else {
-      setShowCorrectAnswer(true);
+      setShowPreview(true);
     }
     setCurrentQuestionIndex(questions.length);
   }, []);
@@ -177,6 +179,18 @@ export function QuizLayout({
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#2E7D32]" />
         </div>
       </Layout>
+    );
+  }
+
+  if (showPreview) {
+    return (
+      <QuizPreviewLayout
+        quiz={quiz}
+        questions={questions}
+        isReadonly={isReadonly}
+        selectedVisibilityType={selectedVisibilityType}
+        score={score}
+      />
     );
   }
 
@@ -320,7 +334,10 @@ export function QuizLayout({
                     : "Don't worry, keep trying and you'll get better."}
                 </p>
                 <button
-                  onClick={() => setShowResult(false)}
+                  onClick={() => {
+                    setShowResult(false);
+                    setShowPreview(true);
+                  }}
                   className="mt-4 px-6 py-3 bg-[#2E7D32] text-white rounded-full hover:bg-[#1B5E20] transition-colors text-lg font-semibold"
                 >
                   Hide Result
