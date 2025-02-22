@@ -68,10 +68,11 @@ The AI integration in this project uses a structured prompt template and schema 
 
 ### Resources
 
-- **Youtube video demo**:
-- **Demo video blob**: https://github.com/fullendmaestro/quizy/blob/main/public/quizy.webp
+- **Youtube video demo**: https://youtu.be/QFEm0TbwKT8
+- **Demo Illustration demo blob**: https://raw.githubusercontent.com/fullendmaestro/quizy/refs/heads/main/public/quizy.webp
+- **Live website**: https://www.quiz-y.games
 
-## Local Setup
+## Localm Setup
 
 To set up the project locally, follow these steps:
 
