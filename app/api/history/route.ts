@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const session = await auth();
 
+  // Authourize the incoming request is a valid user
   if (!session || !session.user) {
     return NextResponse.json("Unauthorized!", { status: 401 });
   }

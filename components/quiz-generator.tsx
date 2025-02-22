@@ -72,6 +72,8 @@ const mathTopics = [
   },
 ];
 
+export type QuizTopics = { topic: string; subtopic: string | null };
+
 export function QuizGenerator({
   id,
   selectedVisibilityType,
@@ -84,11 +86,13 @@ export function QuizGenerator({
   user: User | undefined;
 }) {
   const router = useRouter();
+
+  // Quiz form state
   const [title, setTitle] = useState("");
-  const [selectedTopics, setSelectedTopics] = useState<
-    Array<{ topic: string; subtopic: string | null }>
-  >([]);
+  const [selectedTopics, setSelectedTopics] = useState<Array<QuizTopics>>([]);
   const [numQuestions, setNumQuestions] = useState(5);
+
+  // Generatinig state
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerate = async () => {
@@ -116,7 +120,7 @@ export function QuizGenerator({
       router.push(`/quiz/${quizId}`);
     } catch (error) {
       console.error("Error creating quiz:", error);
-      // Handle error (e.g., show error message)
+      // Todo: Handle error
     } finally {
       setIsLoading(false);
     }

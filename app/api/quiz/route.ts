@@ -17,15 +17,8 @@ export async function POST(req: Request) {
     }
 
     const { id, title, topics, numQuestions, visibility } = await req.json();
-    // Store quiz in database
-    console.log({
-      id: generateUUID(),
-      title,
-      topics: JSON.stringify(topics),
-      numQuestions,
-      visibility,
-      userId: session.user.id,
-    });
+
+    // Stave quiz in database
     const newQuiz = await saveQuiz({
       id: generateUUID(),
       title,
@@ -66,6 +59,7 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    // Aunthenticate the incoming request
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -73,8 +67,11 @@ export async function PATCH(req: Request) {
 
     const { quizId, visibility } = await req.json();
 
+    // Update the quiz visibility
     const quiz = await updateQuizVisiblityById({ quizId, visibility });
     console.log("quiz", quiz);
+
+    // Respond with the updated quiz
     return NextResponse.json(quiz);
   } catch (error) {
     console.error("Error fetching quizzes:", error);
@@ -86,15 +83,18 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(request: Request) {
+  // Extract the quiz id from query parAMS
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
+  // Check quiz availability
   if (!id) {
     return new Response("Not Found", { status: 404 });
   }
 
   const session = await auth();
 
+  // Check session
   if (!session || !session.user) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -102,10 +102,12 @@ export async function DELETE(request: Request) {
   try {
     const chat = await getQuizById(id);
 
+    // Authorize the user quiz to be deleted
     if (chat.userId !== session.user.id) {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    // Delete the quiz from db
     await deleteQuizById({ id });
 
     return new Response("Chat deleted", { status: 200 });

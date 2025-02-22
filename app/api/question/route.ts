@@ -6,34 +6,35 @@ import { generateUUID } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   try {
-    const id = generateUUID();
     const { quizId } = await req.json();
-    console.log("generating question for", quizId);
+
+    // Authorize incoming request
     const session = await auth();
     if (!session?.user?.id) {
-      console.log("checking auth");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get quiz details
     const quiz = await getQuizById(quizId);
-    console.log("fetched quiz", quiz);
     if (!quiz) {
-      console.log("checking quiz from db");
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
+    // Authorization with ownership
     if (quiz.userId !== session.user.id) {
-      console.log("checking ownership");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Generate a question with ai
     const question = await generateQuestion(quizId);
+
+    // Save the question into the database
     const savedQuestion = await saveQuestion({
       id: generateUUID(),
       quizId,
       content: question,
     });
-    console.log("savedQuestion", savedQuestion);
+
     return NextResponse.json(savedQuestion, { status: 200 });
   } catch (error) {
     console.error("Error generating question:", error);

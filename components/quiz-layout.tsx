@@ -10,6 +10,7 @@ import { ConfettiEffect } from "./confetti-effect";
 import { BetterLuckEffect } from "./better-luck-effect";
 import { Question, Quiz } from "@/lib/db/schema";
 import { QuizPreviewLayout } from "./quiz-preview-layout";
+import { compare } from "bcrypt-ts";
 
 export function QuizLayout({
   quiz,
@@ -24,9 +25,6 @@ export function QuizLayout({
   selectedVisibilityType: VisibilityType;
   user: User | undefined;
 }) {
-  console.log("quiz", quiz);
-  console.log("initialQuestions", initialQuestions);
-  // initialQuestions || [],
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -38,13 +36,6 @@ export function QuizLayout({
   const [showConfetti, setShowConfetti] = useState(false);
   const [showBetterLuck, setShowBetterLuck] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-
-  useEffect(() => {
-    if (isReadonly) {
-      setShowCorrectAnswer(true);
-    }
-    console.log("questions", questions);
-  }, [isReadonly, questions]);
 
   const sendAnswer = async () => {
     if (isReadonly) return;
@@ -105,11 +96,20 @@ export function QuizLayout({
   };
 
   useEffect(() => {
+    // Automatically show the correct answers if !creator
+    if (isReadonly) {
+      setShowCorrectAnswer(true);
+    }
+
+    // Update the questions state variables with the initial question
+    // or [] if the initial questions is empty
     setQuestions(initialQuestions || []);
 
+    // Generate another question if the quiz questions is incomplete
     if (Number(quiz.numQuestions) > initialQuestions.length) {
       fetchAndSetQuestion();
     } else {
+      // Show the quiz questions preview instead if the quiz questions is already completed
       setShowPreview(true);
     }
     setCurrentQuestionIndex(questions.length);
