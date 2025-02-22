@@ -1,11 +1,13 @@
 # Quizy - AI-Powered Math Practice Application
 
-Quizy is an intelligent math practice application designed to help students improve their mathematical skills through adaptive practice with AI-generated questions. When student answers a questions correctly or incorrectly, the system generates a new question adjusting its difficulty based students performance on previous questions for that topic.
+![Quizy Demo](https://github.com/fullendmaestro/quizy/blob/main/public/quizy.webp)
+
+Quizy is an intelligent math quiz application designed to help students improve their mathematical skills through adaptive practice with AI-generated questions. When a student answers a question correctly or incorrectly, the system generates a new question adjusting its difficulty based on the student's performance on previous questions for that topic.
 
 ## Features
 
 - **Adaptive Learning**: Questions are dynamically adjusted based on student performance
-- **Topic-Based Practice**: Students can select specific math topics to practice
+- **Topic-Based Practice**: Students can select specific math topics to practice on
 - **Progress Tracking**: Track scores and performance for a particular quiz
 
 ## Tech Stack
@@ -18,15 +20,15 @@ Quizy is an intelligent math practice application designed to help students impr
 
 ## The Problem
 
-The issue deals with providing students with more practice and ensuring that their weaknesses are strengthened. When a student gets a question wrong, it would be good for them to try the question again. However, practicing with the same set of numbers may lead to a student memorizing how to solve the question, instead of understanding how to solve that particular question type. As such, it would be better to generate a new question that is similar in method to solve, but with a different set of numbers.
+The issue deals with providing students with more practice and ensuring that their weaknesses are strengthened. When a student gets a question wrong, it would be good for them to try the question again. However, practicing with the same set of numbers may lead to a student memorizing how to solve the question, instead of understanding how to solve that particular question type. As such, it would be better to generate a new question that is similar in method to solve but with a different set of numbers.
 
-## Question Generation process
+## The Question Generation process
 
-The process of generating a new question retrieves the quiz details, selects a random topic, and invokes the AI model with the structured prompt and schema to generate a structured output.
+The process of generating a new question retrieves the quiz details, selects a random topic, and invokes the AI model with the structured prompt and schema to generate a question structured output.
 
 ### Prompt Template and dynamic prompt parameters
 
-The `TEMPLATE` prompt template guides the AI in generating a new math question. The template includes placeholders for various dynamic inputs such as topic index, topics, question history, number of questions, and the correct option index.
+The `TEMPLATE` prompt template guides the AI in generating a new math question. The template includes placeholders for various dynamic inputs such as topics, topic index, question history, number of questions, and the correct option index.
 
 ```typescript
 const TEMPLATE = `Generate a math question based on the given topic index from these topics.
@@ -50,7 +52,7 @@ These dynamic values that are replaced with actual data during the question gene
 
 - **{topics}**: This value is a list of all available math topics. It provides context to the AI about the range of topics from which the question can be generated.
 
-- **{randomTopicIndex}**: The AI tends to hallucinate on a particular topic from the available topics by generating questions for a single topic continously. This value represents the index of a randomly generated index for a topic from the list of available topics. This ensures that the generated question is relevant to the ongoing quiz.
+- **{randomTopicIndex}**: The AI tends to hallucinate on a particular topic from the available topics by generating questions for a single topic continuously. This value represents the index of a randomly generated index for a topic from the list of available topics. This ensures that the generated question is relevant to the ongoing quiz.
 
 - **{history}**: This value contains the user's question history, including previous questions and their submitted answer. It helps the AI adjust the difficulty of the new question based on the user's past performance.
 
@@ -63,3 +65,50 @@ These dynamic values enable the AI to generate personalized and adaptive math qu
 ### Summary
 
 The AI integration in this project uses a structured prompt template and schema to generate adaptive math questions. The AI model adjusts the difficulty based on the user's performance, ensuring a personalized learning experience.
+
+### Resources
+
+- **Youtube video demo**:
+- **Demo video blob**: https://github.com/fullendmaestro/quizy/blob/main/public/quizy.webp
+
+## Local Setup
+
+To set up the project locally, follow these steps:
+
+1. **Clone the repository**:
+
+   ```sh
+   git clone https://github.com/fullendmaestro/quizy.git
+   cd quizy
+   ```
+
+2. **Install dependencies**:
+
+   ```sh
+   pnpm install
+   ```
+
+3. **Set up environment variables**:
+
+   - Copy the .env.example file to .env:
+     ```sh
+     cp .env.example .env
+     ```
+   - Fill in the required environment variables in the .env file.
+
+4. **Run database migrations**:
+
+   ```sh
+   pnpm drizzle-kit:generate
+   pnpm drizzle-kit:push
+   ```
+
+5. **Start the development server**:
+
+   ```sh
+   pnpm run dev
+   ```
+
+6. **Open your browser** and navigate to `http://localhost:3000` to see the application running.
+
+These instructions will help you set up the project locally and start the development server.
