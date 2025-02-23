@@ -113,3 +113,9 @@ To set up the project locally, follow these steps:
 6. **Open your browser** and navigate to `http://localhost:3000` to see the application running.
 
 These instructions will help you set up the project locally and start the development server.
+
+## Credits
+
+Music track: Gameboy by Walen
+Source: https://freetouse.com/music
+Background Music for Video (Free)
