@@ -11,6 +11,31 @@ Quizy is an intelligent math quiz application designed to help students improve 
 - **Progress Tracking**: Track scores and performance for a particular quiz
 - **Public Quizzes**: Update your quiz visibily to public to share them with others
 
+## UX Steps
+
+1. **Generate a quiz**:
+
+   - Select the topics and subtopics you want to include in the quiz. Note, choosing multiple topics makes the system choose a topic to generate on randomly.
+   - Specify the number of questions for the quiz.
+   - Provide a title for the quiz.
+   - Click on the "Generate quiz" button to create the quiz.
+
+2. **Answer Questions**:
+
+   - Select the answer for each question.
+   - Submit your answer to see if it is correct or incorrect.
+   - The system will move to the next question until all questions are answered.
+
+3. **View Results**:
+   - After answering all questions, view your final score.
+   - See which questions you got right and which ones you got wrong.
+   - Review the explanations for the correct answers.
+4. **Share quiz and result**:
+   - Update the visibily to public to share your quiz with other users to read
+
+- **Generate a quiz**:
+- **Answer Questions**:
+
 ## Tech Stack
 
 - **Fullstack**: Next.js 15
