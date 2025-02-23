@@ -7,14 +7,14 @@ import { Layout } from "@/components/layout";
 import Image from "next/image";
 import type { VisibilityType } from "./visibility-selector";
 import { Question, Quiz } from "@/lib/db/schema";
-import { AiQuestion } from "@/lib/quiz";
+import { calculateScore } from "@/lib/utils";
 
 export function QuizPreviewLayout({
   quiz,
   questions,
   isReadonly,
   selectedVisibilityType,
-  score,
+  score: initialScore,
   user,
 }: {
   quiz: Quiz;
@@ -24,8 +24,15 @@ export function QuizPreviewLayout({
   score: number;
   user: User | undefined;
 }) {
-  console.log("preview questions", questions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(initialScore);
+
+  useEffect(() => {
+    if (initialScore === 0 || initialScore === null) {
+      const calculatedScore = calculateScore(questions);
+      setScore(calculatedScore);
+    }
+  }, [initialScore, questions]);
 
   const handlePrevious = () => {
     setCurrentQuestionIndex((prev) => prev - 1);
@@ -40,7 +47,7 @@ export function QuizPreviewLayout({
       quizId={quiz.id}
       selectedVisibilityType={selectedVisibilityType}
       isReadonly={isReadonly}
-      user={undefined}
+      user={user}
     >
       <div className="relative w-full max-w-4xl px-4">
         {currentQuestionIndex > 0 && (

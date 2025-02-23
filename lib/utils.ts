@@ -14,14 +14,13 @@ export function generateUUID(): string {
   });
 }
 
-export function calculateScore(questions: Question[]): any {
+export function calculateScore(questions: Question[]): number {
   let score = 0;
-  questions.map((question) => {
-    if (Number(question.submitedAnswer) == question.content.correctAnswer) {
+  questions.forEach((question) => {
+    if (Number(question.submitedAnswer) === question.content.correctAnswer) {
       score++;
     }
   });
-
   return score;
 }
 
