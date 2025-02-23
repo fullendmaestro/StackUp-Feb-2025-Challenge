@@ -9,6 +9,7 @@ Quizy is an intelligent math quiz application designed to help students improve 
 - **Adaptive Learning**: Questions are dynamically adjusted based on student performance
 - **Topic-Based Practice**: Students can select specific math topics to practice on
 - **Progress Tracking**: Track scores and performance for a particular quiz
+- **Public Quizzes**: Update your quiz visibily to public to share them with others
 
 ## Tech Stack
 
